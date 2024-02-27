@@ -3,6 +3,17 @@
 
 --local mq = require('mq')
 local move = {}
+NavIssuedTimer = Timer:new(5000)--Hard coded for now
+
+function move.Pause()
+    if mq.TLO.Navigation.Active() then mq.cmd('/nav pause') end
+    mq.cmd('/stick pause')
+end
+
+function move.Resume()
+    if mq.TLO.Navigation.Paused() then mq.cmd('/nav pause') end
+    mq.cmd('/stick unpause')
+end
 
 local function waitToStop(howLong)
     mq.delay(300, function() return mq.TLO.Navigation.Active() end)
@@ -14,7 +25,9 @@ function move.CalcDistSq(x1, y1, x2, y2)
 end
 
 function move.CalcDist(x1, y1, z1, x2, y2, z2)
-    return math.sqrt((x2 - x1)*(x2 - x1)  + (y2 - y1)*(y2 - y1) + (z2 - z1)*(z2 - z1))
+    --if not (x1 and y1 and z1 and x2 and y2 and z2) then Write.Debug('move error %s %s %s %s %s %s',x1, y1, z1, x2, y2, z2) return 0 else
+        return math.sqrt((x2 - x1)*(x2 - x1)  + (y2 - y1)*(y2 - y1) + (z2 - z1)*(z2 - z1))
+    --end
 end
 
 function move.TooFar(dist,target)
@@ -52,12 +65,14 @@ function move.NavPathExists(id)
 end
 
 function move.GetToTarget(distance,target,wait) --Add logic for lev on cliffs later
+    --Write.Debug('Velo %s timer %s',mq.TLO.Navigation.Velocity() < 1 , NavIssuedTimer:timer_expired())
     --Write.Debug('Stickuw %s nav active %s Velocity %s exists %s los %s',StickUW,mq.TLO.Navigation.Active(),mq.TLO.Navigation.Velocity(),mq.TLO.Navigation.PathExists("id "..target)(),mq.TLO.LineOfSight(mq.TLO.Spawn(target).Y(),mq.TLO.Spawn(target).X(),mq.TLO.Spawn(target).Z()))
     if StickUW then
         mq.cmd('/stick set heading fast')
         move.StickID(target,'uw 4')
-    elseif not mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() < 1 then
+    elseif (not mq.TLO.Navigation.Active()) or (mq.TLO.Navigation.Velocity() < 1 and NavIssuedTimer:timer_expired() )then --if nav gets interrupted, restart it at state check intervals
         if mq.TLO.Navigation.PathExists("id "..target)() then
+             NavIssuedTimer:reset() 
             move.NavID(target,wait)
         elseif mq.TLO.LineOfSight(mq.TLO.Spawn(target).Y(),mq.TLO.Spawn(target).X(),mq.TLO.Spawn(target).Z()) then
             --Write.Debug("should stick to %s",target)

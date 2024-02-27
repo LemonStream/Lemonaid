@@ -8,7 +8,7 @@ Lemonaid_data.Declares = {
     Hunter = false,
     Follow = "Follow",
     MAID = 0,
-    MEID = "",
+    MEID = 0,
     MATargetID = 0,
     CampX = nil,
     CampY = nil,
@@ -16,6 +16,7 @@ Lemonaid_data.Declares = {
     AssistCalled = true,
     PlayerControlled = false,
     StickUW = false,
+    AmOfftank = false,
 }
 
 Lemonaid_data.MonVars = {

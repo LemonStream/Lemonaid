@@ -1,6 +1,7 @@
 --local mq = require('mq')
 --local Timer = require("lemonaid/lib/timer")
---local DefaultCharacter = require("DefaultCharacter")
+--local DefaultCharacter = require("DefaultCharacter")Event_AcceptInvite
+AmDead = false
 
 function TankEvents()
     mq.doevents('makecamp')
@@ -37,4 +38,25 @@ function Event_IZoned(line, arg1)
 
 end
 mq.event('izoned', 'You have entered #1#.', Event_IZoned)
+
+function Event_SetAssistTarget(line, ...)
+    local arg = {...}
+    local sender = arg[2]
+    Write.Debug(string.format('assist event %s %s',arg[1],arg[2]))
+    if not myName == sender then
+        MATargetID = arg[1]
+        AssistCalled = true
+        Write.Debug(string.format('Told to assist on [%s]',MATargetID))
+    end
+end
+mq.event('assist', '~#2#~*#AssistTarget:#1#', Event_SetAssistTarget)
+
+function Event_IDied(line, ...)
+    local arg = {...}
+    Write.Info('%s has killed me',arg[1])
+    AmDead = true
+    State.DeathLoop()
+end
+mq.event('died', '#*#You have been slain by #1#', Event_IDied)
+
 

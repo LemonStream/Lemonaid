@@ -13,6 +13,7 @@ local assID = 0
 local assName = "Lemons"
 local target = 0
 local numSlots = mq.TLO.Me.XTargetSlots()
+local mode = 1
 xtarTable = {}
 
 
@@ -48,13 +49,15 @@ end
 --See what the AssistID is of the tank 
 local detectAssistID = function()
     if mode == 1 then
+        Write.Debug('AssistName is %s ',mq.TLO.Spawn(assID).AssistName())
         if mq.TLO.Spawn(assID).AssistName() ~= nil and mq.TLO.Spawn(assID).AssistName() ~= "" then
-            Write.Debug(string.format("Checking if assID has an AssistName %s %s",mq.TLO.Spawn(mq.TLO.Spawn(assID).AssistName()).ID(),mq.TLO.Spawn(mq.TLO.Spawn(assID).AssistName()).Type() == "NPC"))
+            Write.Debug("Checking if assID has an AssistName id %s name %s type NPC: %s",mq.TLO.Spawn(mq.TLO.Spawn(assID).AssistName()).ID(),mq.TLO.Spawn(mq.TLO.Spawn(assID).AssistName())(),mq.TLO.Spawn(mq.TLO.Spawn(assID).AssistName()).Type() == "NPC")
             if mq.TLO.Spawn(mq.TLO.Spawn(assID).AssistName()).ID() and mq.TLO.Spawn(mq.TLO.Spawn(assID).AssistName()).Type() == "NPC" then 
                 target = mq.TLO.Spawn(mq.TLO.Spawn(assID).AssistName()).ID() else target = 0
             end
         end
     elseif mode == 2 then
+        Write.Debug('2AssistName is %s ',mq.TLO.Spawn(assID).AssistName())
         if mq.TLO.Spawn(assID).Distance() < 150  and mq.TLO.Me.XTarget() == 0 then
             if mq.TLO.Target.ID() ~= assID then mq.cmdf("/target id %d",assID) end
             mq.delay(1000, function () return mq.TLO.Target.ID() == assID end )
@@ -100,14 +103,14 @@ end
 
 --Add the AssistID to XTarget if it's not there. Uses the first empty slot or slot 1
 local setXAssist = function()
-    --Write.Debug(string.format("Checking for stale repeat names %s",mq.TLO.Spawn(target).AssistName()))
+    Write.Debug("Checking for stale repeat names %s target is %s",mq.TLO.Spawn(target).AssistName(),target)
     if mq.TLO.Spawn(target).AssistName() == "" then return end --Respawns that have the same name which will get added even if they have no agro. 
     local tarDist = mq.TLO.Spawn(target).Distance()
     for i=1,numSlots,1 do
-        --Write.Debug(string.format("Checking for valid entry %s %s %s %s on target %s %s",xtarTable[i] == 0,target ~= 0,not mq.TLO.Me.XTarget(IDtoCN(target))(),i ~= 1,target, IDtoCN(target)))
+        Write.Debug(string.format("Checking for valid entry %s %s %s %s on target %s %s",xtarTable[i] == 0,target ~= 0,not mq.TLO.Me.XTarget(IDtoCN(target))(),i ~= 1,target, IDtoCN(target)))
         if xtarTable[i] == 0 and target ~= 0 and not mq.TLO.Me.XTarget(IDtoCN(target))() and i ~= 1 then
-            Write.Debug(string.format("Distance is %s and type is %s which is %s",tarDist,mq.TLO.Me.XTarget(i).Type(),mq.TLO.Me.XTarget(i).Type() == "NPC"))
-            if tarDist and tarDist <= 200  and mq.TLO.Me.XTarget(i).Type() == "NPC" then
+            Write.Debug(string.format("Distance is %s and type is %s which is %s",tarDist,mq.TLO.Me.XTarget(i).Type(),mq.TLO.Spawn(target).Type() == "NPC"))
+            if tarDist and tarDist <= 200  and mq.TLO.Spawn(target).Type() == "NPC" then
                 Write.Info(string.format("\aySetting \ao %s \ay to slot %s",IDtoSpawn(target),i))
                 mq.cmdf('/xtarget set %i %s', i, IDtoSpawn(target))
                 MATargetID = target
@@ -116,7 +119,7 @@ local setXAssist = function()
             end
             return
         elseif target ~= 0 and not mq.TLO.Me.XTarget(IDtoCN(target))() then
-            if tarDist and tarDist <= 200  and mq.TLO.Me.XTarget(i).Type() == "NPC" then
+            if tarDist and tarDist <= 200  and mq.TLO.Spawn(target).Type() == "NPC" then
                 if i==1 then
                     mq.cmdf('/xtarget set 1 %s',IDtoSpawn(target))
                     MATargetID = target
@@ -170,13 +173,14 @@ while not checkAssID() do
     mq.delay(5000, function () return mq.TLO.Me.XTarget(IDtoCN(target))() end )
     lassist()
 end
+Write.Debug('mode %s',mode)
 while true do
     getXTarID()
     if mq.TLO.Me.ID() ~= assID then
         detectAssistID()
         setXAssist()
     end
-    mq.delay(150)
+    mq.delay(10)
     clearXTar()
     checkAssID()
 end

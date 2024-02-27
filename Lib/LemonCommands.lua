@@ -46,4 +46,22 @@ function Command.StickUW(...)
     Write.Debug('StickUW set to %s %s', StickUW, args[2])
 end
 mq.bind('/lstick', Command.StickUW)
+
+function Command.Ignore(...)
+    local args = {...}
+    local data
+    local tar = mq.TLO.Target.CleanName()
+    if not args[1] and tar then
+        data = tar
+    elseif args[1] then
+        data = args
+    end
+    if data and not myconfig.Ignore[data] then
+        Write.Debug("Ignoring NPC %s",data)
+        myconfig.Ignore[data] = true
+        mq.pickle(path,myconfig)
+        Killing = false
+    end
+end
+mq.bind('/lignore', Command.Ignore)
 return Command
