@@ -17,6 +17,8 @@ Cast = require("lemonaid/lib/LemonCast")
 General = require("lemonaid/lib/LemonGeneral")
 Buff = require("lemonaid/lib/LemonBuff")
 Class_Schema = require("lemonaid/lib/class_schemas")
+Bard = require('lemonaid/lib/LemonBard')
+
 
 --Build a level appropriate ini file on command. Only issue is it won't have conditions on DPS items unless they're hardcoded. 
 --Could hardcode to a family of spells? Or just build the AI to handle things like taunt
@@ -46,7 +48,7 @@ if err then
     configFileName = '/lemonaid/'..myName..'_autoconfig.lua' --If no player created settings, then create an auto settings file. This way we can separate the auto selected spells etc
     path = mq.configDir..configFileName
     -- failed to read the config file, create it using pickle
-    ChooseSchema() --Go autoselect spells etc
+    ChooseSchema() --Go autoselect spells etc. This will edit the DPS, Buffs and Heals section of the loaded DefaultCharacter table
     mq.pickle(path, DefaultCharacter)
     myconfig = loadfile(path)()
 elseif configData then --Once all schemas in, will want to check if we're running
@@ -71,7 +73,7 @@ for _,v in pairs(myconfig) do
     end
 end
 
-StartTimers()
+State.StartTimers()
 Heals.Setup()
 haveMana = mq.TLO.Me.CurrentMana()
 if haveMana > 0 then haveMana = true else haveMana = false end
@@ -154,11 +156,12 @@ if Role == "tank" then
     mq.cmdf("/lassist %s",MAID)
     while run do
         if mq.TLO.EverQuest.GameState() ~= "INGAME" then run = false return end
-        mq.delay(100)
+        mq.delay(10)
         if mq.TLO.Me.Hovering() then State.DeathLoop() end
         Write.Trace(string.format("kill %s id %s %s",Killing,MATargetID,TankGetTarget()))
         checkMAZoneID()
         if StateCheckTimer:timer_expired() then StateCheck() end
+        Bard.DoBardThings()
         moveToMA()
         TankEvents()
         if TankGetTarget() ~= 0 then
@@ -178,6 +181,7 @@ elseif Role == "assist" then
         if mq.TLO.Me.Hovering() then State.DeathLoop() end
         checkMAZoneID()
         if StateCheckTimer:timer_expired() then StateCheck() end
+        Bard.DoBardThings()
         moveToMA()
         Heals.Mainloop()
         AssistEvents()
@@ -197,6 +201,7 @@ elseif Role:lower() == "hunter" then
         if mq.TLO.Me.Hovering() then State.DeathLoop() end
         checkMAZoneID()
         if StateCheckTimer:timer_expired() then StateCheck() end
+        Bard.DoBardThings()
         HunterEvents()
         if not Killing and Target.HunterPossibleTargets() ~= 0 then
             SetHunterTargetID()
