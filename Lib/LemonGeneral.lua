@@ -14,6 +14,7 @@ end
 function General.Med() --add a timer after getting hit along with agro check
     if haveMana and not Killing and not following and mq.TLO.Me.Standing() and mq.TLO.Me.PctMana() < MED_AT then
         Write.Debug('Sitting out of combat')
+        --Add in bard logic to twist the regen song? Will require a regen song in the schema
         mq.cmd('/sit')
         mq.delay(300, function() return mq.TLO.Me.Sitting() end)
     end

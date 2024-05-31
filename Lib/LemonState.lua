@@ -6,28 +6,28 @@ local Macros = {
     ['pokscribe.mac'] = true
 }
 
-function StartTimers()
+function State.StartTimers()
     StickTimer = Timer:new(RESTICK_TIMER)
     StateCheckTimer = Timer:new(STATE_CHECK_DELAY)
 end
 
-function TradeWindowOpen()
+function State.TradeWindowOpen()
     local wnd = mq.TLO.Window('TradeWnd')
     if wnd.Open() and wnd.HisTradeReady() and not mq.TLO.Cursor.ID() then
         mq.cmd('/notify TradeWnd TRDW_Trade_Button leftmouseup')
     end
 end
 
-function ClosePopups()
+function State.ClosePopups()
     local wnd = mq.TLO.Window('alertwnd')
     if wnd.Open() then mq.cmd('/nomodkey /notify alertwnd ALW_Dismiss_Button leftmouseup') end
 end
 
-function GroupRolesAssigned()
+function State.GroupRolesAssigned()
     if mq.TLO.Me.AmIGroupLeader() and not mq.TLO.Group.MainAssist.ID() then Write.Debug('Group Role not set. Setting %s to MA',MAName) GroupRoles('set',MAName,2) end
 end
 
-function clearCursor()
+function State.clearCursor()
     if mq.TLO.Cursor.ID() and mq.TLO.Me.FreeInventory() > 1 then
         mq.cmd("/autoinventory")
         Write.Debug("Something on my cursor. I have room to autoinventory")
@@ -37,11 +37,11 @@ end
 function StateCheck()
     Write.Trace('Statecheck')
     State.AmIDead()
-    clearCursor()
-    GroupRolesAssigned()
-    TradeWindowOpen()
-    ClosePopups()
-    MacroCheck()
+    State.clearCursor()
+    State.GroupRolesAssigned()
+    State.TradeWindowOpen()
+    State.ClosePopups()
+    State.MacroCheck()
     General.Med()
     if not Killing and not PlayerControlled and mq.TLO.Me.Combat() then mq.cmd('/attack off') end
     StateCheckTimer:reset()
@@ -64,11 +64,11 @@ function State.DeathLoop()
     end
 end
 
-function MacroCheck()
+function State.MacroCheck()
     if Macros[mq.TLO.Macro()] then
         while mq.TLO.Macro() do
             mq.delay(1000)
-            Write.Debug('Waiting for %s to end',mq.TLO.Macro())
+            Write.Debug('Waiting for macro %s to end',mq.TLO.Macro())
         end
     end
     

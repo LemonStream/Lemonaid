@@ -126,17 +126,19 @@ function tableHasValue(tbl, value)
   end
 
 printTable = function(t) --for dictionary/nested
-    print("Printing table ", t)
-    if type(t) == "table" then
-        for index, data in pairs(t) do
-            printf("index is %s and data is %s",index,data)
-            if type(data) == "table" then 
-                for key, value in pairs(data) do
-                    print('\t', key, value)
+    if tableLength(t) then 
+        print("printTable: Printing ", t)
+        if type(t) == "table" then
+            for index, data in pairs(t) do
+                printf("index is %s and data is %s",index,data)
+                if type(data) == "table" then 
+                    for key, value in pairs(data) do
+                        print('\t', key, value)
+                    end
                 end
             end
-        end
-    else print(t) end
+        else print(t) end
+    else print('printTable: Table is empty') end
 end
 
 printTablei = function(t) --for arrays
@@ -180,10 +182,12 @@ end
 
 --Only accepts dictionary? Yes
 function tableLength(T)
-    local count = 0
+   if not T then print('tableLength: No table provided') else
+     local count = 0
     for _ in pairs(T) do count = count + 1 end
     return count
   end
+end
   
 function stringToTable(str,delim)
     local _, count = string.gsub(str, delim, "")
@@ -335,7 +339,7 @@ function pickleTable(tbl,name)
     Write.Info('Pickled to file %s',savePath)
 end
 
---Live table inspection tool
+--[[Live table inspection tool
 gearly = require('../init')
 local checkboxStates = {}
 local openTableWindows = {}
@@ -404,4 +408,4 @@ local function TableInspection()
 end
 
 -- Initialize the GUI
-mq.imgui.init('thing', TableInspection)
+mq.imgui.init('thing', TableInspection)]]

@@ -144,7 +144,11 @@ function Combat.DPS(id)--All regular DPS entries
         --Write.Debug('DPSName is %s Target HP %s Ready %s',DPSName, spawn.PctHPs(),t.Ready())
         tar = t.Target:lower() or 'enemy' --entry or default use it on the enemy
         if t.Enabled and Cast.IsReady(DPSName,t.Type) and spawn.PctHPs() and spawn.PctHPs() <= t.HP and t.Ready() then
-            Write.Debug('%s condition is true delay %s',DPSName,t.Delay)
+            Write.Debug('%s condition is true delay %s',DPSName,t.Delay) --Need a system for dots/slows/debuffs
+            --Can either keep delay as a number and add a flag for debuff and then check if they have the debuff only when the timer is up
+            --or change delay to be a number/"debuff" and have two separate routines for debuffs.
+            --dots would work better with option 1.
+            --Could also add a new flag for dots/debuffs
             if t.Delay and t.Delay > 0 then
                 if not _G[DPSName..'_Timer'] then
                     Write.Debug('First cast of %s will delay %s',DPSName,t.Delay)
@@ -194,6 +198,7 @@ function Combat.InCombat(id)
         AssistEvents()
         Combat.ExitCombat(id)
         if Killing then
+            Bard.BardCombat()
             Combat.CheckTarget(id)
             Combat.StickCheck(id)
             Combat.CheckAttack(id)
